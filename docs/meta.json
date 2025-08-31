@@ -1,0 +1,26 @@
+pmtiles spec version: 3
+tile type: mvt
+bounds: (long: -121.519497, lat: 38.527910) (long: -121.385800, lat: 38.610926)
+min zoom: 0
+max zoom: 15
+center: (long: -121.470337, lat: 38.578232)
+center zoom: 15
+addressed tiles count: 173
+tile entries count: 173
+tile contents count: 173
+clustered: true
+internal compression: gzip
+tile compression: gzip
+maxzoom 15
+strategies [{"tiny_polygons":1},{"tiny_polygons":1},{"tiny_polygons":1},{},{},{},{},{},{},{},{},{},{},{},{},{}]
+vector_layers <object...>
+version 2
+antimeridian_adjusted_bounds -121.519497,38.527910,-121.385800,38.610926
+description runmap.mbtiles
+generator tippecanoe v2.79.0
+generator_options tippecanoe --force -o runmap.mbtiles -Z 0 -z 15 -L coverage:coverage_buffer_m.geojson -L streets_unrun:streets_unrun.geojson --drop-densest-as-needed --coalesce --extend-zooms-if-still-dropping
+minzoom 0
+name runmap.mbtiles
+tilestats <object...>
+type overlay
+format pbf
