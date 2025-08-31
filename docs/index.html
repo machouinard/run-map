@@ -15,7 +15,7 @@
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
 
-  const PMTILES_URL = "./runmap.pmtiles?v=10";
+  const PMTILES_URL = "./runmap.pmtiles?v=11";
 
   const map = new maplibregl.Map({
     container: "map",
@@ -37,7 +37,7 @@
           type: "fill",
           source: "runmap",
           "source-layer": "coverage",
-          paint: { "fill-color": "#7e5bef", "fill-opacity": 0.25, "fill-outline-color": "#5b21b6" }
+          paint: { "fill-color": "#5130bf", "fill-opacity": 0.25, "fill-outline-color": "#200c63" }
         },
         {
           id: "unrun-lines",
