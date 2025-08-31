@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Run Coverage Map</title>
+  <title>PMTiles Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
   <style>html,body,#map{height:100%;margin:0}</style>
@@ -15,7 +15,7 @@
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
 
-  const PMTILES_URL = "./runmap.pmtiles?v=11";
+  const PMTILES_URL = "./runmap.pmtiles?v=demo";
 
   const map = new maplibregl.Map({
     container: "map",
@@ -33,23 +33,18 @@
       layers: [
         { id: "osm", type: "raster", source: "osm" },
         {
-          id: "coverage-fill",
-          type: "fill",
-          source: "runmap",
-          "source-layer": "coverage",
-          paint: { "fill-color": "#5130bf", "fill-opacity": 0.25, "fill-outline-color": "#200c63" }
-        },
-        {
-          id: "unrun-lines",
+          id: "unrun-test",
           type: "line",
           source: "runmap",
-          "source-layer": "streets_unrun",
-          paint: { "line-color": "#ff0000", "line-width": ["interpolate", ["linear"], ["zoom"], 11, 2, 16, 5] }
+          "source-layer": "streets_unrun",   // must match tile metadata
+          paint: { "line-color": "#ff0000", "line-width": 3 }
         }
       ]
     },
     center: [-121.47, 38.57],
-    zoom: 12
+    zoom: 12,
+    minZoom: 11,
+    maxZoom: 16
   });
 
   map.on('error', e => console.error('Map error:', e && e.error));
