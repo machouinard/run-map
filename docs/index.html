@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Run Coverage</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    html, body, #map { height: 100%; margin: 0; }
+    .legend { position:absolute; top:10px; left:10px; background:#fff; padding:8px 10px; border-radius:8px; font:14px/1.2 system-ui; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="legend">
+  <div><span style="display:inline-block;width:12px;height:12px;background:#7e5bef;opacity:.3;margin-right:6px;"></span>Coverage buffer</div>
+  <div><span style="display:inline-block;width:12px;height:2px;background:#e11d48;margin-right:6px;vertical-align:middle;"></span>Unrun streets</div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@3.0.6/dist/pmtiles.js"></script>
+<script>
+  // Register PMTiles protocol
+  const protocol = new pmtiles.Protocol();
+  maplibregl.addProtocol("pmtiles", protocol.tile);
+
+  // Replace with your Pages path if needed
+  const PMTILES_URL = "runmap.pmtiles";
+
+  const map = new maplibregl.Map({
+    container: "map",
+    style: {
+      version: 8,
+      sources: {
+        // Basemap: free raster tiles
+        osm: {
+          type: "raster",
+          tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+          tileSize: 256,
+          attribution: "© OpenStreetMap contributors"
+        },
+        runmap: {
+          type: "vector",
+          url: "pmtiles://" + PMTILES_URL
+        }
+      },
+      layers: [
+        { id: "osm", type: "raster", source: "osm" },
+
+        // Coverage buffer polygons (semi-transparent)
+        {
+          id: "coverage-fill",
+          type: "fill",
+          source: "runmap",
+          "source-layer": "coverage",
+          paint: {
+            "fill-color": "#7e5bef",
+            "fill-opacity": 0.28,
+            "fill-outline-color": "#6b21a8"
+          }
+        },
+
+        // Unrun streets (thin red lines on top)
+        {
+          id: "unrun-line",
+          type: "line",
+          source: "runmap",
+          "source-layer": "streets_unrun",
+          paint: {
+            "line-color": "#e11d48",
+            "line-width": [
+              "interpolate", ["linear"], ["zoom"],
+              10, 0.6,
+              14, 1.5,
+              17, 3.0
+            ]
+          }
+        }
+      ]
+    },
+    center: [-121.47, 38.57], // Sacramento approx
+    zoom: 12
+  });
+
+  // Show your current location on phone
+  map.addControl(new maplibregl.GeolocateControl({
+    positionOptions: { enableHighAccuracy: true },
+    trackUserLocation: true,
+    showUserHeading: true
+  }));
+
+  map.addControl(new maplibregl.NavigationControl());
+</script>
+</body>
+</html>
