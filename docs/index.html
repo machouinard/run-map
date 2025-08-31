@@ -2,20 +2,32 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>PMTiles Test</title>
+  <title>Run Coverage Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
-  <style>html,body,#map{height:100%;margin:0}</style>
+  <style>
+    html,body,#map{height:100%;margin:0}
+    .legend{position:absolute;bottom:12px;left:12px;background:#fff;padding:8px 10px;border-radius:8px;
+            box-shadow:0 2px 8px rgba(0,0,0,.15);font:13px system-ui}
+    .legend div{margin:4px 0;display:flex;align-items:center;gap:8px}
+    .swatch{width:20px;height:10px;border-radius:2px}
+    .swatch.border{border:2px solid #5b21b6;background:#7e5bef33}
+  </style>
 </head>
 <body>
 <div id="map"></div>
+<div class="legend">
+  <div><span class="swatch" style="background:#888"></span> Base streets</div>
+  <div><span class="swatch border"></span> Coverage buffer</div>
+  <div><span class="swatch" style="background:#f00"></span> Unrun streets</div>
+</div>
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/pmtiles@3.0.6/dist/pmtiles.js"></script>
 <script>
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
 
-  const PMTILES_URL = "./runmap.pmtiles?v=demo";
+  const PMTILES_URL = "./runmap.pmtiles?v=14";
 
   const map = new maplibregl.Map({
     container: "map",
@@ -32,12 +44,45 @@
       },
       layers: [
         { id: "osm", type: "raster", source: "osm" },
+
+        // 1) Base streets — thin gray
         {
-          id: "unrun-test",
+          id: "base-streets",
           type: "line",
           source: "runmap",
-          "source-layer": "streets_unrun",   // must match tile metadata
-          paint: { "line-color": "#ff0000", "line-width": 3 }
+          "source-layer": "base",
+          minzoom: 11, maxzoom: 16,
+          paint: {
+            "line-color": "#888888",
+            "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.8, 16, 1.4]
+          }
+        },
+
+        // 2) Coverage buffer — semi-transparent purple, under lines
+        {
+          id: "coverage-fill",
+          type: "fill",
+          source: "runmap",
+          "source-layer": "coverage",
+          minzoom: 11, maxzoom: 16,
+          paint: {
+            "fill-color": "#7e5bef",
+            "fill-opacity": 0.25,
+            "fill-outline-color": "#5b21b6"
+          }
+        },
+
+        // 3) Unrun streets — bold red on top
+        {
+          id: "unrun-lines",
+          type: "line",
+          source: "runmap",
+          "source-layer": "streets_unrun",
+          minzoom: 11, maxzoom: 16,
+          paint: {
+            "line-color": "#ff0000",
+            "line-width": ["interpolate", ["linear"], ["zoom"], 11, 2, 16, 5]
+          }
         }
       ]
     },
