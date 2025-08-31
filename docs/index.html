@@ -2,15 +2,24 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Run Coverage — GeoJSON Test</title>
+  <title>Run Coverage Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
-  <style>html,body,#map{height:100%;margin:0}</style>
+  <style>
+    html, body, #map { height:100%; margin:0; }
+  </style>
 </head>
 <body>
 <div id="map"></div>
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@3.0.6/dist/pmtiles.js"></script>
 <script>
+  const protocol = new pmtiles.Protocol();
+  maplibregl.addProtocol("pmtiles", protocol.tile);
+
+  // Adjust path if needed — relative to index.html
+  const PMTILES_URL = "./runmap.pmtiles?v=6";
+
   const map = new maplibregl.Map({
     container: "map",
     style: {
@@ -21,34 +30,39 @@
           tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
           tileSize: 256,
           attribution: "© OpenStreetMap"
+        },
+        runmap: {
+          type: "vector",
+          url: "pmtiles://" + PMTILES_URL
         }
       },
-      layers: [{ id: "osm", type: "raster", source: "osm" }]
+      layers: [
+        { id: "osm", type: "raster", source: "osm" },
+        {
+          id: "coverage-fill",
+          type: "fill",
+          source: "runmap",
+          "source-layer": "coverage",       // must match your tile metadata
+          paint: {
+            "fill-color": "#7e5bef",
+            "fill-opacity": 0.25,
+            "fill-outline-color": "#5b21b6"
+          }
+        },
+        {
+          id: "unrun-lines",
+          type: "line",
+          source: "runmap",
+          "source-layer": "streets_unrun",  // must match your tile metadata
+          paint: {
+            "line-color": "#ff0000",
+            "line-width": ["interpolate", ["linear"], ["zoom"], 11, 2, 16, 5]
+          }
+        }
+      ]
     },
-    center: [-121.47, 38.57],
-    zoom: 13
-  });
-
-  map.on('load', async () => {
-    // Load unrun lines (red)
-    const unrun = await fetch('./streets_unrun.geojson?test=1').then(r => r.json());
-    map.addSource('streets_geo', { type: 'geojson', data: unrun });
-    map.addLayer({
-      id: 'unrun-lines',
-      type: 'line',
-      source: 'streets_geo',
-      paint: { 'line-color': '#ff0000', 'fill-opacity': 0.5, 'line-width': 3 }
-    });
-
-    // Load coverage polygon (purple translucent)
-    const cov = await fetch('./coverage_buffer_m.geojson?test=1').then(r => r.json());
-    map.addSource('cov_geo', { type: 'geojson', data: cov });
-    map.addLayer({
-      id: 'cov-fill',
-      type: 'fill',
-      source: 'cov_geo',
-      paint: { 'fill-color': '#aa9cd9', 'fill-opacity': 0.28, 'fill-outline-color': '#300e9e' }
-    });
+    center: [-121.47, 38.57],  // adjust as needed
+    zoom: 12
   });
 
   map.on('error', e => console.error('Map error:', e && e.error));
